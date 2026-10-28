@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>India Weather Analysis</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef3f8;
+            color: #243247;
+            margin: 0;
+            padding: 25px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        header {
+            background: #17365d;
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin-top: 0;
+        }
+
+        .panel, .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 12px #0000000d;
+        }
+
+        input, select, button {
+            padding: 11px;
+            margin: 5px 0;
+            border: 1px solid #ccd5e0;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            background: #1769aa;
+            color: white;
+            cursor: pointer;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .card h3 {
+            color: #607086;
+            font-size: 14px;
+        }
+
+        .value {
+            font-size: 25px;
+            font-weight: bold;
+            color: #1769aa;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .charts img {
+            width: 100%;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #1769aa;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f3f7fb;
+        }
+
+        .error {
+            background: #ffe4e4;
+            color: #9b1c1c;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .results a {
+            display: block;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f0f6fc;
+            border-radius: 8px;
+            color: #1769aa;
+            text-decoration: none;
+        }
+
+        .note {
+            color: #607086;
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #607086;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header>
+        <h1>🇮🇳 India Weather Data Analysis</h1>
+        <p>Explore historical weather data for cities across India.</p>
+        <p>Period: {{ start_date }} to {{ end_date }}</p>
+    </header>
+
+    <div class="panel">
+        <h2>🔎 Search Any City in India</h2>
+
+        <form action="/" method="GET">
+            <input
+                type="text"
+                name="search"
+                placeholder="Enter a city, e.g. Vijayawada"
+                value="{{ search_query }}"
+                required>
+
+            <button type="submit">Search City</button>
+        </form>
+
+        {% if search_results %}
+            <h3>Search Results</h3>
+
+            <div class="results">
+                {% for result in search_results %}
+                    <a href="/?lat={{ result.latitude }}&lon={{ result.longitude }}&name={{ result.name | urlencode }}">
+                        <strong>{{ result.name }}</strong>
+                        {% if result.admin1 %} — {{ result.admin1 }}{% endif %}
+                        <br>
+                        <small>Click to load historical weather data</small>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h2>🏙️ Major Indian Cities</h2>
+
+        <form action="/" method="GET">
+            <label for="city">Choose a city:</label>
+
+            <select name="city" id="city">
+                {% for city in cities %}
+                    <option value="{{ city }}"
+                        {% if city == city_name %}selected{% endif %}>
+                        {{ city }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Get Weather</button>
+        </form>
+    </div>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% if stats %}
+        <h2>Weather Summary — {{ city_name }}</h2>
+
+        <p class="note">
+            Data source: Open-Meteo historical weather service.
+            Values are model-based historical weather data, not guaranteed
+            local weather-station measurements.
+        </p>
+
+        <div class="stats">
+            <div class="card">
+                <h3>Average Temperature</h3>
+                <div class="value">{{ stats.average }} °C</div>
+            </div>
+
+            <div class="card">
+                <h3>Highest Daily Maximum</h3>
+                <div class="value">{{ stats.highest }} °C</div>
+            </div>
+
+            <div class="card">
+                <h3>Lowest Daily Minimum</h3>
+                <div class="value">{{ stats.lowest }} °C</div>
+            </div>
+
+            <div class="card">
+                <h3>Total Precipitation</h3>
+                <div class="value">{{ stats.rainfall }} mm</div>
+            </div>
+
+            <div class="card">
+                <h3>Average Humidity</h3>
+                <div class="value">{{ stats.humidity }}%</div>
+            </div>
+
+            <div class="card">
+                <h3>Daily Records</h3>
+                <div class="value">{{ stats.records }}</div>
+            </div>
+        </div>
+
+        <h2>Monthly Weather Trends</h2>
+
+        <div class="charts">
+            <div class="panel">
+                <h3>Average Temperature</h3>
+                <img
+                    src="data:image/png;base64,{{ temperature_chart }}"
+                    alt="Monthly average temperature chart">
+            </div>
+
+            <div class="panel">
+                <h3>Total Rainfall</h3>
+                <img
+                    src="data:image/png;base64,{{ rainfall_chart }}"
+                    alt="Monthly rainfall chart">
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Daily Weather Records</h2>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Average Temperature (°C)</th>
+                        <th>Humidity (%)</th>
+                        <th>Precipitation (mm)</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for record in records %}
+                        <tr>
+                            <td>{{ record.date }}</td>
+                            <td>{{ record.location }}</td>
+                            <td>{{ record.temperature }}</td>
+                            <td>{{ record.humidity }}</td>
+                            <td>{{ record.rainfall }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    <footer>
+        Built with Python, Flask, Pandas, Matplotlib and Open-Meteo
+    </footer>
+
+</div>
+</body>
+</html>
+

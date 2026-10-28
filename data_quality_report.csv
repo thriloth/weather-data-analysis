@@ -1,0 +1,5 @@
+Check,Count
+Missing values,0
+Invalid temperature records,0
+Invalid humidity records,0
+Negative rainfall records,0

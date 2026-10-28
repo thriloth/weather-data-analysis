@@ -1,0 +1,5 @@
+location,month,average_temperature,maximum_temperature,minimum_temperature,average_humidity,total_rainfall
+Bangalore,2026-01,25.0,27,23,60.0,8
+Bangalore,2026-02,28.6,30,27,45.6,4
+Bangalore,2026-03,31.4,33,30,36.8,6
+Bangalore,2026-04,34.4,36,33,33.2,6
